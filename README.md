@@ -1,6 +1,8 @@
-# Testes de API - Consulta de CPF com Postman
+# Testes de API - Consulta de CEP com Postman
 
 Exercício de testes automatizados de API REST usando Postman, com foco em validação de status HTTP, corpo da resposta e tempo de resposta.
+
+**API:** [BrasilAPI](https://brasilapi.com.br) — gratuita, sem token, sem cadastro.
 
 ## Estrutura
 
@@ -13,19 +15,24 @@ Exercício de testes automatizados de API REST usando Postman, com foco em valid
 
 1. Importe os dois arquivos no Postman (File > Import)
 2. Selecione o environment **"CPF API - Ambiente"** no canto superior direito
-3. Atualize a variável `base_url` com sua URL e token da API
-4. Execute a collection com o Runner (Collection Runner ou Newman)
+3. Execute a collection com o Collection Runner
 
 ## Casos de Teste
 
-| ID    | Cenário                              | Tipo     | Validações                          |
-|-------|--------------------------------------|----------|-------------------------------------|
-| CT-01 | CPF válido                           | Positivo | Status 200, campo cpf, tempo < 2s   |
-| CT-02 | CPF válido - estrutura completa      | Positivo | Status 200, JSON válido, tipos      |
-| CT-03 | CPF com formato inválido (letras)    | Negativo | Status 4xx, mensagem de erro        |
-| CT-04 | CPF com dígitos verificadores erros  | Negativo | Status 4xx ou valid=false           |
-| CT-05 | CPF com todos dígitos iguais         | Borda    | Rejeição por regra da Receita Fed.  |
-| CT-06 | Requisição sem CPF                   | Borda    | Status 400 ou 404                   |
+| ID    | Cenário                              | Tipo     | Validações                           |
+|-------|--------------------------------------|----------|--------------------------------------|
+| CT-01 | CEP válido (Praça da Sé - SP)        | Positivo | Status 200, campos cep/state, tempo  |
+| CT-02 | CEP válido - estrutura completa      | Positivo | Status 200, JSON válido, city/street |
+| CT-03 | CEP com letras (formato inválido)    | Negativo | Status 400, mensagem de erro         |
+| CT-04 | CEP inexistente (99999999)           | Negativo | Status 404, campo message            |
+| CT-05 | CEP com menos de 8 dígitos           | Borda    | Status 400, corpo não vazio          |
+| CT-06 | CEP com mais de 8 dígitos            | Borda    | Status 400, corpo não vazio          |
+
+## Endpoint utilizado
+
+```
+GET https://brasilapi.com.br/api/cep/v2/{cep}
+```
 
 ## Rodando via Newman (linha de comando)
 
@@ -33,11 +40,5 @@ Exercício de testes automatizados de API REST usando Postman, com foco em valid
 npm install -g newman
 
 newman run CPF-API-Collection.postman_collection.json \
-  -e CPF-API-Environment.postman_environment.json \
-  --reporters cli,junit \
-  --reporter-junit-export resultado.xml
+  -e CPF-API-Environment.postman_environment.json
 ```
-
-## API utilizada
-
-[api.cpfcnpj.com.br](https://api.cpfcnpj.com.br) — plano gratuito disponível para testes.
