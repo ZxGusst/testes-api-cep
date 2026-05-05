@@ -1,0 +1,290 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "CPF API - Testes Automatizados",
+    "description": "Collection de testes para a API de consulta e validação de CPF.\n\nCobre:\n- Status HTTP correto\n- Estrutura do corpo da resposta\n- Tempo de resposta\n- Cenários positivos e negativos\n\nConfigure o Environment antes de executar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Consultas Válidas",
+      "item": [
+        {
+          "name": "CT-01 | GET CPF Válido - Retorna 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// CT-01: CPF válido deve retornar status 200",
+                  "pm.test('CT-01 | Status deve ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Validação de tempo de resposta (máx 2000ms)",
+                  "pm.test('CT-01 | Tempo de resposta abaixo de 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "// Validação do Content-Type",
+                  "pm.test('CT-01 | Content-Type é application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "// Validação da estrutura do corpo",
+                  "pm.test('CT-01 | Corpo contém campo cpf', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('cpf');",
+                  "});",
+                  "",
+                  "pm.test('CT-01 | CPF retornado bate com o consultado', function () {",
+                  "    const json = pm.response.json();",
+                  "    const cpfConsultado = pm.variables.get('cpf_valido').replace(/[^\\d]/g, '');",
+                  "    const cpfRetornado  = String(json.cpf).replace(/[^\\d]/g, '');",
+                  "    pm.expect(cpfRetornado).to.eql(cpfConsultado);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{cpf_valido}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{cpf_valido}}"]
+            },
+            "description": "Consulta um CPF com número matematicamente válido.\nEspera-se status 200 e corpo JSON com campo 'cpf'."
+          },
+          "response": []
+        },
+        {
+          "name": "CT-02 | GET CPF Válido - Estrutura completa da resposta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// CT-02: Valida campos esperados na resposta",
+                  "pm.test('CT-02 | Status deve ser 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('CT-02 | Tempo de resposta abaixo de 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('CT-02 | Resposta é um objeto JSON válido', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('CT-02 | Corpo contém campo situacao (ou status)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const temSituacao = json.hasOwnProperty('situacao') || json.hasOwnProperty('status');",
+                  "    pm.expect(temSituacao).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('CT-02 | Valores do corpo são do tipo correto', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.cpf) { pm.expect(json.cpf).to.be.a('string'); }",
+                  "    if (json.nome) { pm.expect(json.nome).to.be.a('string'); }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{cpf_valido_2}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{cpf_valido_2}}"]
+            },
+            "description": "Valida a estrutura completa do JSON retornado para um CPF válido."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Consultas Inválidas",
+      "item": [
+        {
+          "name": "CT-03 | GET CPF com formato inválido - Retorna erro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// CT-03: CPF com formato inválido deve retornar 4xx",
+                  "pm.test('CT-03 | Status deve ser 4xx (erro do cliente)', function () {",
+                  "    pm.expect(pm.response.code).to.be.within(400, 499);",
+                  "});",
+                  "",
+                  "pm.test('CT-03 | Tempo de resposta abaixo de 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('CT-03 | Corpo indica erro / mensagem de validação', function () {",
+                  "    const texto = pm.response.text();",
+                  "    const temErro = texto.toLowerCase().includes('error') ||",
+                  "                   texto.toLowerCase().includes('erro')  ||",
+                  "                   texto.toLowerCase().includes('invalid') ||",
+                  "                   texto.toLowerCase().includes('inválido');",
+                  "    pm.expect(temErro).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{cpf_formato_invalido}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{cpf_formato_invalido}}"]
+            },
+            "description": "Envia CPF com letras/caracteres inválidos.\nEspera-se status 4xx com mensagem de erro."
+          },
+          "response": []
+        },
+        {
+          "name": "CT-04 | GET CPF matematicamente inválido - Retorna erro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// CT-04: CPF com dígitos verificadores errados",
+                  "pm.test('CT-04 | Status deve ser 4xx ou campo valid=false', function () {",
+                  "    const status = pm.response.code;",
+                  "    if (status === 200) {",
+                  "        const json = pm.response.json();",
+                  "        const isInvalid = json.valid === false ||",
+                  "                         json.valido === false ||",
+                  "                         json.situacao === 'Inválido';",
+                  "        pm.expect(isInvalid).to.be.true;",
+                  "    } else {",
+                  "        pm.expect(status).to.be.within(400, 499);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('CT-04 | Tempo de resposta abaixo de 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{cpf_digito_invalido}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{cpf_digito_invalido}}"]
+            },
+            "description": "CPF com dígitos verificadores incorretos.\nEspera-se rejeição pela API."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Casos de Borda",
+      "item": [
+        {
+          "name": "CT-05 | GET CPF com todos dígitos iguais - Inválido por regra",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// CT-05: CPFs como 111.111.111-11 são inválidos por regra da RF",
+                  "pm.test('CT-05 | Status indica rejeição (4xx ou valid=false)', function () {",
+                  "    const status = pm.response.code;",
+                  "    if (status === 200) {",
+                  "        const json = pm.response.json();",
+                  "        const rejeitado = json.valid === false ||",
+                  "                          json.valido === false ||",
+                  "                          json.situacao === 'Inválido';",
+                  "        pm.expect(rejeitado).to.be.true;",
+                  "    } else {",
+                  "        pm.expect(status).to.be.within(400, 499);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('CT-05 | Tempo de resposta abaixo de 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('CT-05 | Resposta possui corpo não vazio', function () {",
+                  "    pm.expect(pm.response.text()).to.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{cpf_digitos_iguais}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{cpf_digitos_iguais}}"]
+            },
+            "description": "CPFs com todos os dígitos iguais (ex: 111.111.111-11) são matematicamente válidos\nmas inválidos pela regra da Receita Federal.\nEspera-se que a API rejeite."
+          },
+          "response": []
+        },
+        {
+          "name": "CT-06 | GET CPF vazio / sem parâmetro - Retorna 404 ou 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// CT-06: Requisição sem CPF na URL",
+                  "pm.test('CT-06 | Status deve ser 400 ou 404', function () {",
+                  "    pm.expect([400, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test('CT-06 | Tempo de resposta abaixo de 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Requisição sem informar nenhum CPF na URL.\nEspera-se 400 Bad Request ou 404 Not Found."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
