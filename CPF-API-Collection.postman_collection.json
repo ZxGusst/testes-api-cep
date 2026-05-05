@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "name": "CPF API - Testes Automatizados",
+    "name": "CEP API - Testes Automatizados",
     "description": "Testes automatizados para a BrasilAPI - endpoint de consulta de CEP.\nSem autenticação, sem token — 100% gratuito.\n\nValida: status HTTP, estrutura do corpo JSON e tempo de resposta.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
